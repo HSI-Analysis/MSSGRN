@@ -9,18 +9,27 @@
 <figcaption align = "center"><b>Figure - The proposed SSGRN. </b></figcaption>
 </figure>
 
-##  Arpi
+
+### How to create env
+```
 conda create --name MSSGRN python=3.8
+
 conda activate MSSGRN
+
 pip install -r requirements.txt
+```
 
-
-
-
+### How to run
+```
 conda activate MSSGRN
+
 cd utils/src
+
 cd ../../
+
 python trainval.py
+
+```
 
 
 ## Usage
