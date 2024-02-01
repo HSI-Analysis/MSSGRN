@@ -1,0 +1,6 @@
+torch==1.9
+scipy==1.7.3
+opencv-python
+scikit-learn
+# apex==0.9.10  
+# pyramid==1.10.10  
