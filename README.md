@@ -12,6 +12,8 @@
 
 ### How to create env
 ```
+git clone https://github.com/HSI-Analysis/MSSGRN.git
+
 conda create --name MSSGRN python=3.8
 
 conda activate MSSGRN
@@ -21,6 +23,7 @@ pip install -r requirements.txt
 
 ### How to run
 ```
+
 conda activate MSSGRN
 
 cd utils/src
