@@ -1,7 +1,7 @@
 import torch
 from torch.utils.cpp_extension import load_inline
 from .pair_wise_distance_cuda_source import source
-import sys
+
 
 print("compile cuda source of 'pair_wise_distance' function...")
 print("NOTE: if you avoid this process, you make .cu file and compile it following https://pytorch.org/tutorials/advanced/cpp_extension.html")
@@ -9,7 +9,6 @@ print("NOTE: if you avoid this process, you make .cu file and compile it followi
 #     "pair_wise_distance", cpp_sources="", cuda_sources=source
 # )
 print("done")
-
 
 import pair_wise_distance_cuda
 

@@ -10,7 +10,7 @@ import scipy.io as scio
 import torch
 import torch.nn as nn
 import cv2
-# import apex
+#import apex
 from torch.autograd import Variable
 from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
@@ -29,6 +29,20 @@ from func import load,product,intersectionAndUnionGPU
 #     device=torch.device('cpu')
 #     print('using device:',device)
 
+
+
+def plot(data, title):
+    # print(title , "         ________________________:")
+    # print(type(data))
+    # print(np.unique(data))
+    # print(data.shape)
+    # color_image = np.zeros((520, 696, 3)) 
+
+    # color_image[data == 1] = (0, 255, 0)  # Assigning Green color to 0 (old 1) not ablated
+    # color_image[data == 2] = (0, 0, 255)   # Assigning Red color to 1 (old 2) ablated
+    # cv2.imwrite("plots/" + title + ".png", color_image)
+    print()
+
 torch.backends.cudnn.benchmark = False
 
 def main():
@@ -37,7 +51,7 @@ def main():
     parser = argparse.ArgumentParser(description="Network Trn_val_Tes")
     ## dataset setting
     #changed______________________________________________________
-    parser.add_argument('--dataset', type=str, default='afeyan',
+    parser.add_argument('--dataset', type=str, default='indian',
                         choices=['afeyan','indian','pavia','houston','salina','ksc'],
                         help='dataset name')
     
@@ -45,7 +59,7 @@ def main():
                         choices=['1','2','3','4'],
                         help='data number')    
     
-    parser.add_argument('--trained_on', type=str, default='AA',
+    parser.add_argument('--trained_on', type=str, default='BB',
                         choices=['AA','AB','AC','BA','BB','BC', 'CA', 'CB','CC'],
                         help='train on m lable')
     ## network setting
@@ -86,7 +100,7 @@ def main():
                         help='weight decay')
     parser.add_argument('--workers', type=int, default=2,
                         help='workers num')
-    parser.add_argument('--ignore_label', type=int, default=255,
+    parser.add_argument('--ignore_label', type=int, default=255, 
                         help='ignore label')
     parser.add_argument('--print_freq', type=int, default=3,
                         help='print frequency')
@@ -192,18 +206,17 @@ def main():
 
         a = product(c, FLAG, All_data)
 
-        rows_num,trn_num,val_num,tes_num, pre_num =a.generation_num(labeled_data,rows_num)
+        rows_num, trn_num, val_num, tes_num, pre_num =a.generation_num(labeled_data,rows_num)
 
         #################################### trn_label #####################################
 
         y_trn_map=a.production_label(trn_num, y_map, split='Trn')
 
-        # plt.xlabel('trn_label_map')
-        # plt.imshow(y_trn_map,cmap='jet')
-        # plt.xticks([])
-        # plt.yticks([])
-        #
-        # plt.show()
+        if not os.path.exists('plots'):
+            os.makedirs('plots')
+
+        plot(y_trn_map, "trn_label_map")
+
 
         if args.input_mode == 'whole':
 
@@ -224,12 +237,13 @@ def main():
             raise NotImplementedError
 
 
-        # plt.xlabel('trn_data_map')
-        # plt.imshow(y_trn_data[0], cmap='jet')
-        # plt.xticks([])
-        # plt.yticks([])
-        #
-        # plt.show()
+
+
+
+            
+
+     
+
 
         y_trn_data-=1
 
@@ -243,12 +257,8 @@ def main():
 
         y_val_map = a.production_label(val_num, y_map, split='Val', gt_test = gt_test)
 
-        # plt.xlabel('val_label_map')
-        # plt.imshow(y_val_map, cmap='jet')
-        # plt.xticks([])
-        # plt.yticks([])
-        #
-        # plt.show()
+        plot(y_val_map, 'val_label_map' )
+
 
         if args.input_mode == 'whole':
 
@@ -267,13 +277,8 @@ def main():
                     i+=1
         else:
             raise NotImplementedError
+        plot(y_val_data[0], 'val_data_map')
 
-        # plt.xlabel('val_data_map')
-        # plt.imshow(y_val_data[0], cmap='jet')
-        # plt.xticks([])
-        # plt.yticks([])
-        #
-        # plt.show()
 
         y_val_data -= 1
 
@@ -358,20 +363,18 @@ def main():
         #################################### test_label ####################################
 
         y_tes_map = a.production_label(tes_num, y_map, split='Tes', gt_test=gt_test)
+        
+        
 
-        # plt.xlabel('tes_label_map')
-        #
-        # plt.imshow(y_tes_map, cmap='jet')
-        # plt.xticks([])
-        # plt.yticks([])
-        #
-        # plt.show()
+        plot(y_tes_map, 'tes_label_map')
 
         y_tes_data = y_tes_map.reshape(r, c)
+   
 
         y_tes_data -= 1
 
         y_tes_data[y_tes_data < 0] = 255
+
 
         print('Experiment {}，Testing dataset preparation Finished!'.format(count))
 
@@ -451,22 +454,45 @@ def main():
 
         ## Detailed information (every class accuracy)
 
-        num_tes=np.zeros([categories-1])
-        num_tes_pred=np.zeros([categories-1])
-        for k in y_tes_gt:
-            num_tes[int(k)]+=1# class index start from 0
-        for j in range(y_tes_gt.shape[0]):
-            if y_tes_gt[j]==y_tes[j]:
-                num_tes_pred[int(y_tes_gt[j])]+=1
+        # num_tes=np.zeros([categories-1])  
+        # num_tes_pred=np.zeros([categories-1])
+
+        # for k in y_tes_gt:
+
+        #     num_tes[int(k)]+=1# class index start from 0
+
+        # for j in range(y_tes_gt.shape[0]):
+        #     if y_tes_gt[j]==y_tes[j]:
+        #         num_tes_pred[int(y_tes_gt[j])]+=1
+        # changed
+        y_tes_gt_copy = y_tes_gt.copy()      
+
+
+
+        y_tes_gt_copy[y_tes_gt ==  255] = -1
+        y_tes_gt_copy += 1
+
+        print(np.unique(y_tes_gt_copy) )    
+        print(np.unique(y_tes) )     
+        num_tes = np.zeros([np.unique(y_tes_gt_copy).shape[0] + 1])
+        num_tes_pred = np.zeros([np.unique(y_tes_gt_copy).shape[0] + 1])
+
+        for k in range(np.unique(y_tes_gt_copy).shape[0]):
+            num_tes[int(k)]+=1
+
+        for j in range(y_tes_gt_copy.shape[0]):
+            if y_tes_gt_copy[j]==y_tes[j]:
+               num_tes_pred[int(y_tes_gt_copy[j])]+=1
 
         Acc=num_tes_pred/num_tes*100
+        print(Acc)
 
         Experiment_result[0,count]=np.mean(y_tes_gt==y_tes)*100#OA
         Experiment_result[1,count]=np.mean(Acc)#AA
         Experiment_result[2,count]=cohen_kappa_score(y_tes_gt,y_tes)*100#Kappa
         Experiment_result[3, count] = trn_time
         Experiment_result[4, count] = tes_time2 - tes_time1
-        Experiment_result[5:,count]=Acc
+        # Experiment_result[5:,count]= Acc
 
         print('Experiment {}，Testing set AA={}'.format(count, np.mean(Acc)))
 
@@ -493,12 +519,9 @@ def main():
 
         cv2.imwrite(str(args.network)+'_'+str(FLAG) +'_groups_'+ str(args.sa_groups)+ '.png', y_disp_all.reshape(r,c))
 
-    # plt.xlabel('pre image')
-    # plt.imshow(y_disp_all.reshape(r, c), cmap='jet')
-    # plt.xticks([])
-    # plt.yticks([])
-    #
-    # plt.show()
+    plot(y_disp_all.reshape(r, c), 'pre image')
+
+    
 
     print('One time training cost {:.4f} secs'.format(trn_time))
     print('One time testing cost {:.4f} secs'.format(tes_time2 - tes_time1))
@@ -596,7 +619,12 @@ def train(args, epoch, net, optimizer, trn_loader, criterion, categories):
 
     accuracy_class = intersection_meter.sum / (target_meter.sum + 1e-10)
     mAcc = np.mean(accuracy_class)
-    allAcc = sum(intersection_meter.sum) / (sum(target_meter.sum) + 1e-10)
+    #changed
+    if type(intersection_meter.sum) is int:
+        allAcc = intersection_meter.sum / (target_meter.sum + 1e-10)
+    else:
+        print("I have been here")
+        allAcc = sum(intersection_meter.sum) / (sum(target_meter.sum) + 1e-10)
 
     print('Training epoch [{}/{}]: Loss {:.4f} AA/OA {:.4f}/{:.4f}.'.format(epoch + 1,
                                                                 args.epochs,loss_meter.avg,

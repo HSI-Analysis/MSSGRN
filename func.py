@@ -12,11 +12,18 @@ class load():
         if flag == 'afeyan':
             path_to_folder = "../../HSI-Data/data_size=696x520/"
             type = "porcine" 
+
+            
+
             path = path_to_folder + type + number + "_696x520x31/MAT/"
+            print(path + "gt/" + type + number + "_" + trained_on + "_696x520_gt_m.mat")
+
+
+
             afeyan_dict = scio.loadmat(path + "data/" + type + number + "_696x520x31.mat")
             afeyan_gt_dict_train = scio.loadmat(path + "gt/" + type + number + "_" + trained_on + "_696x520_gt_m.mat")
             afeyan_gt_dict_test = scio.loadmat(path + "gt/" + type + number + "_not_" + trained_on + "_696x520_gt_m.mat")
-
+            
             afeya_shape = afeyan_dict[list(afeyan_dict.keys())[3]].shape
             afeyan_new = np.zeros((afeya_shape[1], afeya_shape[2], afeya_shape[0])).astype(np.int64)
 
@@ -29,13 +36,27 @@ class load():
 
             original = afeyan_dict[list(afeyan_dict.keys())[3]].reshape(696 * 520, 31)
             gt_train = afeyan_gt_dict_train[list(afeyan_gt_dict_train.keys())[3]].reshape(696 * 520, 1)
+
+            # gt_train_copy = gt_train .copy()
+
+            
+            # gt_train[gt_train_copy == 0] = -1
+            # gt_train[gt_train_copy == 1] = 1
+            # gt_train[gt_train_copy == 2] = 2
+           
             gt_test = afeyan_gt_dict_test[list(afeyan_gt_dict_test.keys())[3]].reshape(696 * 520, 1)
+            # gt_test_copy = gt_test.copy()
+
+            
+            # gt_test[gt_test_copy == 0] = -1
+            # gt_test[gt_test_copy == 1] = 1
+            # gt_test[gt_test_copy == 2] = 2
 
             gt = gt_train
 
             r = afeyan_dict[list(afeyan_dict.keys())[3]].shape[0]
             c = afeyan_dict[list(afeyan_dict.keys())[3]].shape[1]
-            categories = 2
+            categories = 3
         #___________________________________________________________________________________________________________________________________________________
 
         if flag == 'indian':
@@ -59,6 +80,7 @@ class load():
             r = Ind_pines_dict['indian_pines'].shape[0]
             c = Ind_pines_dict['indian_pines'].shape[1]
             categories = 17
+            gt_test = gt_train = gt
         if flag == 'pavia':
             pav_univ_dict = scio.loadmat('../../Dataset/PaviaU.mat')
             pav_univ_gt_dict = scio.loadmat('../../Dataset/PaviaU_gt.mat')
@@ -138,7 +160,7 @@ class product():
         self.All_data = All_data
     # product the training and testing pixel ID
     def generation_num(self, labeled_data, rows_num):
-        samples_type = "fixed"#"fixed" # "fixed" # samples_type: ratio, fixed
+        samples_type = "ratio"  # "fixed" # samples_type: ratio, fixed
 
 
         if samples_type == 'ratio':
@@ -236,6 +258,7 @@ class product():
         
             sample_num = train_num_expected
             for i in range(class_count + 1):
+                print("i:   ", i)
 
                 
                 idx = self.All_data[self.All_data[:, -1] == i, 0]
@@ -252,12 +275,14 @@ class product():
                     sample_num  = train_num_expected
 
 
-                if i != 0: # labeled
+                if i > 0: # labeled
+                    print("labled")
                     trn_num.append(idx[:sample_num])
                     val_num.append(idx[sample_num : sample_num + class_count]) 
                     tes_num.append(idx[sample_num + class_count : ])
                 
                 else:
+                    print("not labled")
                     val_num.append(idx[:sample_num])
                     tes_num.append(idx[sample_num:])
 
@@ -285,14 +310,19 @@ class product():
         idx_2d[:, 1] = num % self.c
 
         label_map = np.zeros(y_map.shape)
-        
+
         for i in range(num.shape[0]):
             if split == 'Trn':
+
                 label_map[idx_2d[i,0],idx_2d[i,1]] = self.All_data[num[i],-1]
+  
             else:
+                # label_map[idx_2d[i,0],idx_2d[i,1]] = self.All_data[num[i],-1]
                 label_map[idx_2d[i,0],idx_2d[i,1]] = gt_test[num[i],-1]
 
+
         print('{} label map preparation Finished!'.format(split))
+        print(np.unique(label_map))
         return label_map
 
 def intersectionAndUnionGPU(output, target, K, ignore_index=255):
